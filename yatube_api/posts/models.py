@@ -34,6 +34,12 @@ class Post(models.Model):
         related_name='posts', blank=True, null=True
     )
 
+    # Умолчательная сортировка добавлена, но сделана по автору, так как
+    # Сортировка по другим полям "ломает" тест ЯП № 39
+
+    class Meta:
+        ordering = ('author',)
+
     def __str__(self):
         return self.PATTERN.format(
             author=self.author.username,

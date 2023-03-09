@@ -6,6 +6,11 @@ from rest_framework import filters
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 
 from .serializers import (
     PostSerializer,
@@ -14,7 +19,7 @@ from .serializers import (
     FollowSerializer
 )
 
-from .permissions import IsAuthenticatedIsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly, IsOwner
 from posts.models import Post, Group
 
 
@@ -28,10 +33,9 @@ class CreateListViewSet(mixins.ListModelMixin,
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    """Вьюсет для Post"""
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedIsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = LimitOffsetPagination
 
     def perform_create(self, serializer):
@@ -39,16 +43,14 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для Group"""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticatedIsAuthorOrReadOnly]
+    permission_classes = [AllowAny]
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Вьюсет для Comment"""
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedIsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
     def get_post(self):
         return get_object_or_404(Post, id=self.kwargs.get("post_id"))
@@ -64,10 +66,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(CreateListViewSet):
-    """Вьюсет для Follow"""
     serializer_class = FollowSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('following__username',)
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         return self.request.user.follower.all()
