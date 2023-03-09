@@ -38,7 +38,7 @@ class Post(models.Model):
     # Сортировка по другим полям "ломает" тест ЯП № 39
 
     class Meta:
-        ordering = ('author',)
+        ordering = ('author', '-pub_date',)
 
     def __str__(self):
         return self.PATTERN.format(

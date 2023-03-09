@@ -19,7 +19,7 @@ from .serializers import (
     FollowSerializer
 )
 
-from .permissions import IsAuthorOrReadOnly, IsOwner
+from .permissions import IsAuthorOrReadOnly
 from posts.models import Post, Group
 
 
@@ -53,7 +53,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
     def get_post(self):
-        return get_object_or_404(Post, id=self.kwargs.get("post_id"))
+        return get_object_or_404(Post, id=self.kwargs.get('post_id'))
 
     def get_queryset(self):
         return self.get_post().comments.all()
@@ -69,7 +69,7 @@ class FollowViewSet(CreateListViewSet):
     serializer_class = FollowSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('following__username',)
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return self.request.user.follower.all()
